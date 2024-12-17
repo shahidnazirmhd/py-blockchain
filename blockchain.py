@@ -71,7 +71,7 @@ def mine_block():
 
 def get_balance(participant):
     tx_sender = [[tx["amount"] for tx in block["transactions"] if tx["sender"] == participant] for block in blockchain]
-    open_tx_sender = [tx["sender"] for tx in open_transactions if tx["sender"] == participant]
+    open_tx_sender = [tx["amount"] for tx in open_transactions if tx["sender"] == participant]
     tx_sender.append(open_tx_sender)
     amount_sent = 0
     for tx in tx_sender:
@@ -133,7 +133,6 @@ while waiting_for_input:
             print("Transaction success!")
         else:
             print("Transaction failX")    
-        print(open_transactions)
     elif user_choice == "2":
         if mine_block():
             open_transactions = []
