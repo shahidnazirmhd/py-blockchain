@@ -1,10 +1,10 @@
 from functools import reduce
 import json
 
-from hash_util import hash_block
+from utility.hash_util import hash_block
 from block import Block
 from transaction import Transaction
-from verification import Verification
+from utility.verification import Verification
 
 #Initializing blockchain
 MINIG_REWARD = 10
@@ -35,7 +35,7 @@ class Blockchain:
 
     def load_data(self):
         try:
-            with open("../data/blockchain_data.txt", mode="r") as f:
+            with open("blockchain_data.txt", mode="r") as f:
                 content = f.readlines()
                 blockchain = json.loads(content[0][:-1])
                 updated_blockchain = []
@@ -65,7 +65,7 @@ class Blockchain:
 
     def save_data(self):
         try:
-            with open("../data/blockchain_data.txt", mode="w") as f:
+            with open("blockchain_data.txt", mode="w") as f:
                 dict_blockchain = [block.__dict__ for block in [Block(block_el.index, block_el.previous_hash, [tx.to_ordered_dict() for tx in block_el.transactions], block_el.proof, block_el.timestamp) for block_el in self.__chain]]
                 dict_open_transactions = [tx.__dict__ for tx in self.__open_transactions]
                 f.write(json.dumps(dict_blockchain))
