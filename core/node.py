@@ -69,7 +69,8 @@ class Node:
 
         else:
             print("User Left!")
+            
 
-
-node = Node()
-node.listening_for_input()            
+if __name__ == '__main__': 
+    node = Node()
+    node.listening_for_input()            
