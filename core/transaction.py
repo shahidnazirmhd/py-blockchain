@@ -6,12 +6,14 @@ class Transaction:
     sender: str
     recipient: str
     amount: float
+    signature: str
 
     def to_ordered_dict(self):
         return OrderedDict([
             ('sender', self.sender),
             ('recipient', self.recipient),
-            ('amount', self.amount)
+            ('amount', self.amount),
+            ('signature', self.signature)
         ])
     
 
