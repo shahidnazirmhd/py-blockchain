@@ -23,14 +23,51 @@ def create_keys():
         blockchain = Blockchain(wallet.public_key)
         response = {
             "public_key": wallet.public_key,
-            "private_key": wallet.private_key
+            "private_key": wallet.private_key,
+            "funds": blockchain.get_balance()
         }
         return jsonify(response), 201
     else:
         response = {
-            "message": "Saving the keys failed, but created"
+            "message": "Saving the keys failed"
         }
         return jsonify(response), 500
+    
+
+@app.route('/wallet', methods=['GET'])
+def load_keys():
+    if wallet.load_keys():
+        global blockchain 
+        blockchain = Blockchain(wallet.public_key)
+        response = {
+            "public_key": wallet.public_key,
+            "private_key": wallet.private_key,
+            "funds": blockchain.get_balance()
+        }
+        return jsonify(response), 201
+    else:
+        response = {
+            "message": "Loading the keys failed"
+        }
+        return jsonify(response), 500
+    
+
+@app.route('/balance', methods=['GET'])
+def get_balance():
+    balance = blockchain.get_balance()
+    if balance != None:
+        response = {
+            "message": "Balance fetched sucessfully.",
+            "funds":balance,
+        }
+        return jsonify(response), 201
+    else:
+        response = {
+            "message": "Loading balance failed.",
+            "wallet_set_up": wallet.public_key != None
+        }
+        return jsonify(response), 406   
+
 
 
 @app.route('/mine', methods=['POST'])
@@ -40,7 +77,8 @@ def mine():
     if block != None:
         response = {
             "message": "Block added sucessfully.",
-            "block":block
+            "block":block,
+            "funds": blockchain.get_balance()
         }
         return jsonify(response), 201
     else:
