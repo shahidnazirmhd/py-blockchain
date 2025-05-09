@@ -15,6 +15,42 @@ def greet():
     return 'Hello!...'
 
 
+@app.route('/wallet', methods=['POST'])
+def create_keys():
+    wallet.create_keys()
+    if wallet.save_keys():
+        global blockchain 
+        blockchain = Blockchain(wallet.public_key)
+        response = {
+            "public_key": wallet.public_key,
+            "private_key": wallet.private_key
+        }
+        return jsonify(response), 201
+    else:
+        response = {
+            "message": "Saving the keys failed, but created"
+        }
+        return jsonify(response), 500
+
+
+@app.route('/mine', methods=['POST'])
+def mine():
+    block = blockchain.mine_block()
+    """NO NEED TO CONVERT TO __dict__ BECAUSE @dataclass USED"""
+    if block != None:
+        response = {
+            "message": "Block added sucessfully.",
+            "block":block
+        }
+        return jsonify(response), 201
+    else:
+        response = {
+            "message": "Adding a block failed.",
+            "wallet_set_up": wallet.public_key != None
+        }
+        return jsonify(response), 406
+
+
 @app.route('/chain', methods=['GET'])
 def get_chain():
     chain_snapshot = blockchain.chain
