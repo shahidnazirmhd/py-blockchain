@@ -15,8 +15,9 @@ class Blockchain:
         genesis_block = Block(0, "", [], 100, 0)
         self.chain = [genesis_block]
         self.__open_transactions = []
-        self.load_data()
         self.hosting_node = hosting_node_id
+        self.__peer_nodes = set()
+        self.load_data()
 
     @property
     def chain(self):
@@ -51,12 +52,14 @@ class Blockchain:
                     )
                     updated_blockchain.append(updated_block)
                 self.chain = updated_blockchain #USING SETTER
-                open_transactions = json.loads(content[1])
+                open_transactions = json.loads(content[1][:-1])
                 updated_open_transactions = []
                 for tx in open_transactions:
                     updated_otx = Transaction(tx["sender"], tx["recipient"], tx["amount"], tx["signature"])
                     updated_open_transactions.append(updated_otx)
                 self.__open_transactions = updated_open_transactions
+                peer_nodes = json.loads(content[2])
+                self.__peer_nodes = set(peer_nodes)
         except (IOError, IndexError):
             print("Handled Exception...Data file not found! - Continuing with initial data")
             pass
@@ -72,6 +75,8 @@ class Blockchain:
                 f.write(json.dumps(dict_blockchain))
                 f.write("\n")
                 f.write(json.dumps(dict_open_transactions))
+                f.write("\n")
+                f.write(json.dumps(list(self.__peer_nodes)))
         except IOError:
             print("Saving failed!")
 
@@ -139,6 +144,20 @@ class Blockchain:
         tx_recipient = [[tx.amount for tx in block.transactions if tx.recipient == participant] for block in self.__chain]
         amount_received = reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_recipient, 0)
         return amount_received-amount_sent
+    
+
+    def add_peer_node(self, node):
+        self.__peer_nodes.add(node)
+        self.save_data()
+
+
+    def remove_peer_node(self, node):
+        self.__peer_nodes.discard(node)
+        self.save_data()
+
+
+    def get_peer_nodes(self):
+        return list(self.__peer_nodes)
 
 
 
