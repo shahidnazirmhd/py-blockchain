@@ -11,12 +11,13 @@ from wallet import Wallet
 MINIG_REWARD = 10
 
 class Blockchain:
-    def __init__(self, hosting_node_id):
+    def __init__(self, public_key, node_id):
         genesis_block = Block(0, "", [], 100, 0)
         self.chain = [genesis_block]
         self.__open_transactions = []
-        self.hosting_node = hosting_node_id
+        self.public_key = public_key
         self.__peer_nodes = set()
+        self.node_id = node_id
         self.load_data()
 
     @property
@@ -37,7 +38,7 @@ class Blockchain:
 
     def load_data(self):
         try:
-            with open("blockchain_data.txt", mode="r") as f:
+            with open("blockchain_data-{}.txt".format(self.node_id), mode="r") as f:
                 content = f.readlines()
                 blockchain = json.loads(content[0][:-1])
                 updated_blockchain = []
@@ -69,7 +70,7 @@ class Blockchain:
 
     def save_data(self):
         try:
-            with open("blockchain_data.txt", mode="w") as f:
+            with open("blockchain_data-{}.txt".format(self.node_id), mode="w") as f:
                 dict_blockchain = [block.__dict__ for block in [Block(block_el.index, block_el.previous_hash, [tx.to_ordered_dict() for tx in block_el.transactions], block_el.proof, block_el.timestamp) for block_el in self.__chain]]
                 dict_open_transactions = [tx.__dict__ for tx in self.__open_transactions]
                 f.write(json.dumps(dict_blockchain))
@@ -89,7 +90,7 @@ class Blockchain:
 
 
     def add_transaction(self,recipient, sender, amount, signature):
-        if self.hosting_node == None:
+        if self.public_key == None:
             return False
         """To store new transaction"""
         transaction = Transaction(sender, recipient, amount, signature)
@@ -110,12 +111,12 @@ class Blockchain:
 
 
     def mine_block(self):
-        if self.hosting_node == None:
+        if self.public_key == None:
             return None
         last_block = self.__chain[-1]
         hashed_block = hash_block(last_block)
         proof = self.proof_of_work()
-        reward_transaction = Transaction("MINING", self.hosting_node, MINIG_REWARD, "")
+        reward_transaction = Transaction("MINING", self.public_key, MINIG_REWARD, "")
         copied_transactions = self.__open_transactions[:]
         for tx in copied_transactions:
             if not Wallet.verify_transaction(tx):
@@ -134,9 +135,9 @@ class Blockchain:
 
 
     def get_balance(self):
-        if self.hosting_node == None:
+        if self.public_key == None:
             return None
-        participant = self.hosting_node
+        participant = self.public_key
         tx_sender = [[tx.amount for tx in block.transactions if tx.sender == participant] for block in self.__chain]
         open_tx_sender = [tx.amount for tx in self.__open_transactions if tx.sender == participant]
         tx_sender.append(open_tx_sender)
