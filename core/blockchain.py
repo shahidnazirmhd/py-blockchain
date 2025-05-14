@@ -143,6 +143,18 @@ class Blockchain:
         self.__open_transactions = []
         self.save_data()
         return block
+    
+
+    def add_block(self, block):
+        transactions = [Transaction(tx['sender'], tx['recipient'], tx['amount'], tx['signature']) for tx in block['transaction']]
+        is_proof_valid = Verification.valid_proof(transactions, block['previous_hash'], block['proof'])
+        hashes_match = hash_block(self.chain[-1]) == block['previous_hash']
+        if not is_proof_valid or not hashes_match:
+            return False
+        converted_block = Block(block['index'], block['previous_hash'], transactions, block['proof'], block['timestamp'])
+        self.__chain.append(converted_block)
+        self.save_data()
+        return True
 
 
     def get_balance(self, sender=None):
