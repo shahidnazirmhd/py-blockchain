@@ -198,6 +198,39 @@ def get_nodes():
     return jsonify(response), 200
 
 
+@app.route('/broadcast-transaction', methods=['POST'])
+def broadcast_transaction():
+    if not request.is_json:
+        response = {
+            "message": "Send correct data"
+        }
+        return jsonify(response), 400
+    values = request.get_json()
+    required_fields = ['sender', 'recipient', 'amount', 'signature']
+    if not all(field in values for field in required_fields):
+        response = {
+            "message": "Required fields are missing"
+        }
+        return jsonify(response), 400
+    success = blockchain.add_transaction(values['recipient'], values['sender'], values['amount'], values['signature'], is_receiving=True)
+    if success:
+        response = {
+            "message": "Transaction completed successfully.",
+            "transaction": {
+                "sender": values['sender'],
+                "recipient": values['recipient'],
+                "amount": values['amount'],
+                "signature": values['signature']
+            }
+        }
+        return jsonify(response), 201
+    else:
+        response = {
+            "message": "X Creating a transaction failed X."
+        }
+        return jsonify(response), 500
+
+
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-p', '--port', type=int, default=5000)
