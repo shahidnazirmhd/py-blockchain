@@ -1,6 +1,7 @@
 from functools import reduce
 import json
 import requests
+from dataclasses import asdict
 
 from utility.hash_util import hash_block
 from block import Block
@@ -142,12 +143,21 @@ class Blockchain:
         self.__chain.append(block)
         self.__open_transactions = []
         self.save_data()
+        for node in self.__peer_nodes:
+            url = 'http://{}/broadcast-block'.format(node)
+            """NO NEED TO CONVERT TO __dict__ BECAUSE @dataclass USED"""
+            try:
+                response = requests.post(url, json={'block': asdict(block)})
+                if response.status_code == 400 or response.status_code == 500:
+                    print("block declined, need to resolve")
+            except requests.exceptions.ConnectionError:
+                continue
         return block
     
 
     def add_block(self, block):
-        transactions = [Transaction(tx['sender'], tx['recipient'], tx['amount'], tx['signature']) for tx in block['transaction']]
-        is_proof_valid = Verification.valid_proof(transactions, block['previous_hash'], block['proof'])
+        transactions = [Transaction(tx['sender'], tx['recipient'], tx['amount'], tx['signature']) for tx in block['transactions']]
+        is_proof_valid = Verification.valid_proof(transactions[:-1], block['previous_hash'], block['proof'])
         hashes_match = hash_block(self.chain[-1]) == block['previous_hash']
         if not is_proof_valid or not hashes_match:
             return False
