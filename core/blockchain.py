@@ -93,7 +93,7 @@ class Blockchain:
 
 
     def add_transaction(self,recipient, sender, amount, signature, is_receiving=False):
-        # if self.public_key == None:
+        # if self.public_key is None:
         #     return False
         """To store new transaction"""
         transaction = Transaction(sender, recipient, amount, signature)
@@ -124,7 +124,7 @@ class Blockchain:
 
 
     def mine_block(self):
-        if self.public_key == None:
+        if self.public_key is None:
             return None
         last_block = self.__chain[-1]
         hashed_block = hash_block(last_block)
@@ -179,8 +179,8 @@ class Blockchain:
 
 
     def get_balance(self, sender=None):
-        if sender == None:
-            if self.public_key == None:
+        if sender is None:
+            if self.public_key is None:
                 return None
             participant = self.public_key
         else:
