@@ -268,6 +268,20 @@ def broadcast_block():
         return jsonify(response), 409
 
 
+@app.route('/resolve-conflicts', methods=['POST'])
+def resolve_conflicts():
+    replaced = blockchain.resolve()
+    if replaced:
+        response = {
+            'message': 'Chain replaced!'
+        }
+        return jsonify(response), 200
+    else:
+        response = {
+            'message': 'Local chain kept.'
+        }
+        return jsonify(response), 200
+
 
 if __name__ == '__main__':
     parser = ArgumentParser()
